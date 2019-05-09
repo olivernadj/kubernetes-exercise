@@ -151,6 +151,17 @@ kubectl label nodes minikube hardware=high-spec
 kubectl delete -f echo-server-deployment.yaml
 ```
 
+### 06-health-check
+```
+cd examples/06-health-check
+
+# create replication controller
+kubectl create -f echo-server-deployment.yaml,echo-server-service.yaml
+
+kubectl describe pod echoserver-depl-<randid>
+
+kubectl delete -f echo-server-deployment.yaml,echo-server-service.yaml
+```
 
 ### 10-secret-server
 
