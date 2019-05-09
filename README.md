@@ -71,6 +71,19 @@ kubectl create -f echo-server-service.yaml
 kubectl delete -f echo-server.yaml,echo-server-service.yaml
 ```
 
+### 02-replication
+```
+cd examples/02-replication
+
+# create replication controller
+kubectl create -f echo-server-repl-controller.yaml,echo-server-service.yaml
+
+# get list of replication controller
+kubectl get rc
+
+# remove recently created kubernetes object
+kubectl delete -f echo-server-repl-controller.yaml,echo-server-service.yaml
+```
 
 
 
