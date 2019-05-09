@@ -139,3 +139,20 @@ prometheus-service.yaml,redis-exporter-deployment.yaml,redis-service.yaml
 ```
 
 
+### 11-web-ui
+
+More info: https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+
+```
+cd examples/11-web-ui
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml
+kubectl apply -f dashboard-adminuser.yaml
+
+#this will provide you with the token you need for token auth
+kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
+
+#this one will hangs, means the proxy is opened
+kubectl proxy
+```
+Kubectl will make Dashboard available at [localhost:8001](http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/.)
