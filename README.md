@@ -124,6 +124,34 @@ kubectl edit deployment/echoserver-depl
 kubectl delete -f echo-server-deployment.yaml
 ```
 
+### 04-service
+```
+cd examples/04-service
+
+# create replication controller
+kubectl create -f echo-server-deployment.yaml,echo-server-service.yaml --record
+
+# get list of services
+kubectl get svc
+
+kubectl delete -f echo-server-deployment.yaml,echo-server-service.yaml
+```
+
+### 05-label
+```
+cd examples/05-label
+kubectl create -f echo-server-deployment.yaml
+kubectl get deploy
+kubectl rollout status deployment/echoserver-depl
+kubectl describe pod echoserver-depl-<randid>
+
+kubectl get nodes --show-labels
+kubectl label nodes minikube hardware=high-spec
+
+kubectl delete -f echo-server-deployment.yaml
+```
+
+
 ### 10-secret-server
 
 You can check out the secret-server repo here:
