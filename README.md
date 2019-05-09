@@ -71,7 +71,7 @@ kubectl delete svc echoserver-service
 kubectl create -f echo-server-service.yaml
 
 # remove recently created kubernetes object
-kubectl delete -f echo-server.yaml,echo-server-service.yaml
+kubectl delete -f echo-server.yaml
 ```
 
 ### 02-replication
@@ -79,13 +79,13 @@ kubectl delete -f echo-server.yaml,echo-server-service.yaml
 cd examples/02-replication
 
 # create replication controller
-kubectl create -f echo-server-repl-controller.yaml,echo-server-service.yaml
+kubectl create -f echo-server-repl-controller.yaml
 
 # get list of replication controller
 kubectl get rc
 
 # remove recently created kubernetes object
-kubectl delete -f echo-server-repl-controller.yaml,echo-server-service.yaml
+kubectl delete -f echo-server-repl-controller.yaml
 ```
 
 ### 03-deployment
@@ -93,7 +93,7 @@ kubectl delete -f echo-server-repl-controller.yaml,echo-server-service.yaml
 cd examples/03-deployment
 
 # create replication controller
-kubectl create -f echo-server-deployment.yaml,echo-server-service.yaml --record
+kubectl create -f echo-server-deployment.yaml --record
 
 # get deployemnt rollout status
 kubectl rollout status deployment/echoserver-depl
@@ -107,7 +107,7 @@ kubectl get rs
 # get list of pods with lables
 kubectl get pod --show-labels
 
-# if not exposed yet
+# expose it
 kubectl expose deployment echoserver-depl --name=echoserver-service --type=NodePort
 # check the content
 minikube service echoserver-service --url
@@ -121,7 +121,7 @@ kubectl rollout undo deployment/echoserver-depl
 kubectl edit deployment/echoserver-depl
 
 # remove recently created kubernetes object
-kubectl delete -f echo-server-deployment.yaml,echo-server-service.yaml
+kubectl delete -f echo-server-deployment.yaml
 ```
 
 ### 10-secret-server
