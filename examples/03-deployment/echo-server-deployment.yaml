@@ -1,16 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: echoserver-repl
+  name: echoserver-depl
 spec:
   replicas: 3
+  revisionHistoryLimit: 2
   template:
     metadata:
       labels:
         app: echoserver-app
     spec:
       containers:
-      - image: olivernadj/echo-server
+      - image: olivernadj/echo-server:1.1
         name: echoserver-container
         ports:
         - name: echo-port

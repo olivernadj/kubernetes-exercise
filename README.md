@@ -7,8 +7,11 @@ Build a docker image and push it to the Docker Hub
 ```
 cd docker
 docker build -t echo-server .
-tag echo-server olivernadj/echo-server
-push olivernadj/echo-server
+docker tag echo-server olivernadj/echo-server:1.0
+docker tag echo-server olivernadj/echo-server
+docker login
+docker push olivernadj/echo-server:1.0
+docker push olivernadj/echo-server
 ```
 
 ### Run the public image locally
@@ -90,10 +93,32 @@ kubectl delete -f echo-server-repl-controller.yaml,echo-server-service.yaml
 cd examples/03-deployment
 
 # create replication controller
-kubectl create -f echo-server-deployment.yaml,echo-server-service.yaml
+kubectl create -f echo-server-deployment.yaml,echo-server-service.yaml --record
+
+# get deployemnt rollout status
+kubectl rollout status deployment/echoserver-depl
 
 # get list of deployments
 kubectl get deploy
+
+# get list of replica sets
+kubectl get rs
+
+# get list of pods with lables
+kubectl get pod --show-labels
+
+# if not exposed yet
+kubectl expose deployment echoserver-depl --name=echoserver-service --type=NodePort
+# check the content
+minikube service echoserver-service --url
+
+# update image of deployment
+kubectl set image deployment/echoserver-depl echoserver-container=olivernadj/echo-server:1.1
+kubectl rollout history deployment/echoserver-depl
+
+kubectl rollout undo deployment/echoserver-depl
+
+kubectl edit deployment/echoserver-depl
 
 # remove recently created kubernetes object
 kubectl delete -f echo-server-deployment.yaml,echo-server-service.yaml
