@@ -84,6 +84,7 @@ kubectl get rc
 # remove recently created kubernetes object
 kubectl delete -f echo-server-repl-controller.yaml,echo-server-service.yaml
 ```
+
 ### 03-deployment
 ```
 cd examples/03-deployment
@@ -98,6 +99,43 @@ kubectl get deploy
 kubectl delete -f echo-server-deployment.yaml,echo-server-service.yaml
 ```
 
+### 10-secret-server
 
+You can check out the secret-server repo here:
+https://github.com/olivernadj/secret-server-task
+
+```
+cd examples/10-secret-server
+
+kubectl create -f goapi-deployment.yaml,grafana-deployment.yaml,nginx-deployment.yaml,prometheus-deployment.yaml,\
+redis-deployment.yaml,redis-exporter-service.yaml,goapi-service.yaml,grafana-service.yaml,nginx-service.yaml,\
+prometheus-service.yaml,redis-exporter-deployment.yaml,redis-service.yaml
+
+kubectl get deploy
+    NAME             READY   UP-TO-DATE   AVAILABLE   AGE
+    goapi            3/3     3            3           14s
+    grafana          1/1     1            1           14s
+    nginx            1/1     1            1           14s
+    prometheus       1/1     1            1           14s
+    redis            1/1     1            1           14s
+    redis-exporter   1/1     1            1           14s
+
+kubectl get svc
+    NAME             TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+    goapi            ClusterIP      10.111.203.167   <none>        8080/TCP       43s
+    grafana          ClusterIP      10.104.213.211   <none>        3000/TCP       43s
+    kubernetes       ClusterIP      10.96.0.1        <none>        443/TCP        38m
+    nginx            LoadBalancer   10.101.53.13     <pending>     80:30365/TCP   43s
+    prometheus       ClusterIP      10.100.100.79    <none>        9090/TCP       43s
+    redis            ClusterIP      10.108.52.230    <none>        6379/TCP       43s
+
+
+minikube service nginx --url
+
+kubectl delete -f goapi-deployment.yaml,grafana-deployment.yaml,nginx-deployment.yaml,prometheus-deployment.yaml,\
+redis-deployment.yaml,redis-exporter-service.yaml,goapi-service.yaml,grafana-service.yaml,nginx-service.yaml,\
+prometheus-service.yaml,redis-exporter-deployment.yaml,redis-service.yaml
+
+```
 
 

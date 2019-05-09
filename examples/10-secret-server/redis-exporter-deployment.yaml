@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.18.0 (06a2e56)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: redis-exporter
+  name: redis-exporter
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: redis-exporter
+    spec:
+      containers:
+      - env:
+        - name: REDIS_ADDR
+          value: redis:6379
+        image: olivernadj/secret-api-redis-exporter:1.0.2
+        name: redis-exporter
+        ports:
+        - containerPort: 9121
+        resources: {}
+      restartPolicy: Always
+status: {}
