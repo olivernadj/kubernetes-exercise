@@ -84,6 +84,19 @@ kubectl get rc
 # remove recently created kubernetes object
 kubectl delete -f echo-server-repl-controller.yaml,echo-server-service.yaml
 ```
+### 03-deployment
+```
+cd examples/03-deployment
+
+# create replication controller
+kubectl create -f echo-server-deployment.yaml,echo-server-service.yaml
+
+# get list of deployments
+kubectl get deploy
+
+# remove recently created kubernetes object
+kubectl delete -f echo-server-deployment.yaml,echo-server-service.yaml
+```
 
 
 
