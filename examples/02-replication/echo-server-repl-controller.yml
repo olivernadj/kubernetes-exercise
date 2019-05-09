@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: echoserver-repl
+spec:
+  replicas: 2
+  selector:
+    app: echoserver-app
+  template:
+    metadata:
+      labels:
+        app: echoserver-app
+    spec:
+      containers:
+      - image: olivernadj/echo-server
+        name: echoserver-container
+        ports:
+        - name: echo-port
+          containerPort: 8080

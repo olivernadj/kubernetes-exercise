@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: echoserver-pod
+  labels:
+    app: echoserver-app
+spec:
+  containers:
+    - image: olivernadj/echo-server
+      name: echoserver-container
+      ports:
+        - name: echo-port
+          containerPort: 8080
+
+
