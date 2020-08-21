@@ -42,6 +42,10 @@ kubectl config use-context minikube
 # remove all pods, deployments and services
 kubectl delete --all pods && kubectl delete --all deployments && kubectl delete --all services
 
+
+# export current kube config in case you interact with multiple configs.
+export KUBECONFIG=./kubeconfig.yaml
+
 ```
 
 
@@ -162,6 +166,32 @@ kubectl describe pod echoserver-depl-<randid>
 
 kubectl delete -f echo-server-deployment.yaml,echo-server-service.yaml
 ```
+
+
+### 07-nfs
+
+This example uses hostPath for persistent volume. In production, better use an auto-provisioned persistent volume on GCE, Azure, etc
+Credit: https://github.com/kubernetes/examples/tree/master/staging/volumes/nfs
+
+
+```
+cd examples/07-nfs
+
+# create persistent volume for nfs server.
+kubectl create -f nfs-server-pv.yaml
+
+# spin up the nfs server.
+kubectl create -f nfs-server-deployment.yaml,nfs-server-service.yaml
+
+# get the endpoint IP of the server using the following command
+$ kubectl describe services nfs-server
+
+# use the NFS server IP to update www-pv.yaml and execute the following
+
+kubectl describe pod echoserver-depl-<randid>
+kubectl delete -f echo-server-deployment.yaml,echo-server-service.yaml
+```
+
 
 ### 10-secret-server
 

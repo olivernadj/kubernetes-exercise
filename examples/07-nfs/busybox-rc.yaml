@@ -1,0 +1,35 @@
+# This mounts the nfs volume claim into /mnt and continuously
+# overwrites /mnt/index.html with the time and hostname of the pod.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox-depl
+  labels:
+    app: busybox-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: busybox-app
+  template:
+    metadata:
+      labels:
+        app: busybox-app
+    spec:
+      volumes:
+        - name: busybox-storage
+          persistentVolumeClaim:
+            claimName: www-pvc
+      containers:
+      - name: busybox-container
+        image: busybox:1.28
+        command:
+          - sh
+          - -c
+          - 'while true; do date > /mnt/index.html; hostname >> /mnt/index.html; sleep $(($RANDOM % 5 + 5)); done'
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - mountPath: "/mnt"
+            name: busybox-storage
+
