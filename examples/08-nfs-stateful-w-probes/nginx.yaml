@@ -1,0 +1,80 @@
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: liveness-script
+data:
+  liveness.sh: |2-
+    #!/bin/sh
+    set -e
+    
+    filename="/var/www/files/liveness"
+    
+    echo $(date '+%Y-%m-%d %H:%M:%S') ISALIVE node=$MY_NODE_NAME pod=$MY_POD_NAME podip=$MY_POD_IP > $filename
+    
+    
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    ports:
+    - containerPort: 80
+    livenessProbe:
+      exec:
+        command:
+          - /liveness.sh
+      initialDelaySeconds: 30
+      timeoutSeconds: 10
+      periodSeconds: 30
+      failureThreshold: 2
+    volumeMounts:
+      - name: web-files-storage
+        mountPath: /var/www/files
+      - name: "liveness-script"
+        mountPath: "/liveness.sh"
+        subPath: "liveness.sh"
+    resources: {}
+    env:
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: MY_POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+  volumes:
+  - name: web-files-storage
+    persistentVolumeClaim:
+      claimName: web-files-pvc
+  - name: "liveness-script"
+    configMap:
+      name: "liveness-script"
+      defaultMode: 0777
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: nginx
+

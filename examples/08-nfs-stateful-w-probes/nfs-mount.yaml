@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: web-files-pv
+spec:
+  storageClassName: ""
+  claimRef:
+    name: web-files-pvc
+    namespace: default
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.96.88.88
+    path: "/web-files"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: web-files-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  volumeName: web-files-pv
+  resources:
+    requests:
+      storage: 20Gi

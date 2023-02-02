@@ -1,0 +1,143 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nfs
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: liveness-script
+  namespace: nfs
+data:
+  liveness.sh: |2-
+    #!/bin/bash
+    
+    filename="/exports/web-files/liveness"
+    
+    if [ ! -f $filename ]; then
+      echo "File $filename not found"
+      exit 1
+    fi
+    
+    current_time=$(date +%s)
+    mod_time=$(stat -c %Y $filename)
+    
+    time_diff=$((current_time - mod_time))
+    
+    if [ $time_diff -gt 300 ]; then
+      echo "File $filename modification time is greater than 5 minutes"
+      exit 2
+    fi
+    
+    echo "File modification time is within 5 minutes"
+    exit 0
+
+
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: stateful-nfs-server-app
+  name: stateful-nfs-server
+  namespace: nfs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stateful-nfs-server-app
+  serviceName: stateful-nfs-server
+  template:
+    metadata:
+      labels:
+        app: stateful-nfs-server-app
+    spec:
+      volumes:
+        - name: stateful-nfs-server-storage
+          hostPath:
+            path: "/exports"
+            type: DirectoryOrCreate
+        - name: "liveness-script"
+          configMap:
+            name: "liveness-script"
+            defaultMode: 0777
+      initContainers:
+        - name: stateful-nfs-server-init
+          image: busybox:1.28
+          command: [ 'sh', '-c', "mkdir -p /exports/php-var; mkdir -p /exports/web-uploads; mkdir -p /exports/web-files; chown -R 1000:1000 /exports" ]
+          volumeMounts:
+            - mountPath: "/exports"
+              name: stateful-nfs-server-storage
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+      containers:
+        - name: stateful-nfs-server-container
+          image: k8s.gcr.io/volume-nfs:0.8
+          securityContext:
+            privileged: true
+          ports:
+            - name: nfs
+              containerPort: 2049
+            - name: mountd
+              containerPort: 20048
+            - name: rpcbind
+              containerPort: 111
+          livenessProbe:
+            exec:
+              command:
+                - /liveness.sh
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+            periodSeconds: 30
+            failureThreshold: 2
+          volumeMounts:
+            - mountPath: "/exports"
+              name: stateful-nfs-server-storage
+            - name: "liveness-script"
+              mountPath: "/liveness.sh"
+              subPath: "liveness.sh"
+          env:
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stateful-nfs-server
+  namespace: nfs
+  labels:
+    app: stateful-nfs-server-app
+spec:
+  ports:
+    - name: nfs
+      port: 2049
+    - name: mountd
+      port: 20048
+    - name: rpcbind
+      port: 111
+  selector:
+    app: stateful-nfs-server-app
+  type: ClusterIP
+  clusterIP: 10.96.88.88

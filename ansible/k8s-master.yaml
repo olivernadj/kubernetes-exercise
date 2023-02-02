@@ -1,0 +1,104 @@
+---
+- name: Set up Kubernetes cluster
+  hosts: k8s_master
+  become: yes
+  become_method: sudo
+
+  pre_tasks:
+    - debug: var=ansible_all_ipv4_addresses
+    - debug: var=ansible_default_ipv4.address
+
+    - name: Add Kube GPG apt Key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add kubernetes apt repository for stable version
+      apt_repository:
+        repo: deb [arch=amd64] http://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+
+    - name: Add Docker official GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add download apt repository for stable version
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu   focal stable
+        state: present
+
+    - name: Install aptitude using apt
+      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    - name: Upgrade apt packages
+      become: true
+      apt:
+        upgrade: yes
+
+    - name: Install required system packages
+      apt: name={{ item }} state=present
+      loop:
+        - 'apt-transport-https'
+        - 'ca-certificates'
+        - 'curl'
+        - 'software-properties-common'
+        - 'python3-pip'
+        - 'virtualenv'
+        - 'python3-setuptools'
+        - 'mc'
+        - 'tree'
+        - 'vim'
+        - 'git'
+        - 'wget'
+        - 'gnupg2'
+        - 'uidmap'
+        - 'nfs-common'
+
+    - name: Generate an OpenSSH keypair with the default values (4096 bits, rsa)
+      community.crypto.openssh_keypair:
+        path: /root/.ssh/id_rsa
+
+    - name: Add the overlay module
+      modprobe:
+        name: overlay
+        state: present
+
+    - name: Add the br_netfilter module
+      modprobe:
+        name: br_netfilter
+        state: present
+
+    - name: Create /etc/sysctl.d/kubernetes.conf
+      copy:
+        dest: /etc/sysctl.d/kubernetes.conf
+        content: |
+          net.bridge.bridge-nf-call-ip6tables = 1
+          net.bridge.bridge-nf-call-iptables = 1
+          net.ipv4.ip_forward = 1
+
+    - name: Update kernel
+      command: sysctl --system
+
+    - name: Install containerd, kubeadm, kubelet, and kubectl
+      apt:
+        name:
+          - containerd.io
+          - kubeadm=1.26.1-00
+          - kubelet=1.26.1-00
+          - kubectl=1.26.1-00
+        state: present
+        update_cache: yes
+
+    - name: Remove containerd config
+      command: rm -f /etc/containerd/config.toml
+
+    - name: restart service containerd on centos, in all cases, also issue daemon-reload to pick up config changes
+      systemd:
+        state: restarted
+        daemon_reload: yes
+        name: containerd
+
+  roles:
+    - master
+    - iptables
